@@ -16,6 +16,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Choice',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('txt_choice', models.CharField(max_length=200)),
+                ('is_correct', models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Course',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -27,6 +35,17 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
+            name='Enrollment',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('date_enrolled', models.DateField(default=django.utils.timezone.now)),
+                ('mode', models.CharField(choices=[('audit', 'Audit'), ('honor', 'Honor'), ('BETA', 'BETA')], default='audit', max_length=5)),
+                ('rating', models.FloatField(default=5.0)),
+                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='onlinecourse.course')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
             name='Lesson',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -34,6 +53,24 @@ class Migration(migrations.Migration):
                 ('order', models.IntegerField(default=0)),
                 ('content', models.TextField()),
                 ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='onlinecourse.course')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Submission',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('submission_date', models.DateTimeField(auto_now_add=True)),
+                ('chocies', models.ManyToManyField(to='onlinecourse.Choice')),
+                ('enrollment', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='onlinecourse.enrollment')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Question',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('txt_question', models.TextField(max_length=400)),
+                ('question_grade', models.SmallIntegerField(max_length=3)),
+                ('lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='onlinecourse.lesson')),
             ],
         ),
         migrations.CreateModel(
@@ -54,25 +91,19 @@ class Migration(migrations.Migration):
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
-        migrations.CreateModel(
-            name='Enrollment',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date_enrolled', models.DateField(default=django.utils.timezone.now)),
-                ('mode', models.CharField(choices=[('audit', 'Audit'), ('honor', 'Honor'), ('BETA', 'BETA')], default='audit', max_length=5)),
-                ('rating', models.FloatField(default=5.0)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='onlinecourse.course')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
         migrations.AddField(
             model_name='course',
             name='instructors',
-            field=models.ManyToManyField(to='onlinecourse.instructor'),
+            field=models.ManyToManyField(to='onlinecourse.Instructor'),
         ),
         migrations.AddField(
             model_name='course',
             name='users',
             field=models.ManyToManyField(through='onlinecourse.Enrollment', to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='choice',
+            name='question',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='onlinecourse.question'),
         ),
     ]

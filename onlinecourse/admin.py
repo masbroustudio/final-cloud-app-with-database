@@ -1,45 +1,34 @@
 from django.contrib import admin
-# <HINT> Import any new Models here
-from .models import Course, Lesson, Instructor, Learner, Question, Choice
-
-
-# <HINT> Register QuestionInline and ChoiceInline classes here
-class ChoiceInline(admin.StackedInline):
-    model = Choice
-    extra = 4
-
-
-class QuestionInline(admin.StackedInline):
-    model = Question
-    extra = 2
-
+from .models import Course, Lesson, Instructor, Learner,Question,Choice,Submission
 
 class LessonInline(admin.StackedInline):
     model = Lesson
     extra = 5
 
-
-# Register your models here.
 class CourseAdmin(admin.ModelAdmin):
     inlines = [LessonInline]
     list_display = ('name', 'pub_date')
     list_filter = ['pub_date']
     search_fields = ['name', 'description']
 
+class ChoiceInline(admin.StackedInline):
+    model = Choice
+
+class QuestionAdmin(admin.ModelAdmin):
+    inlines = [ChoiceInline,]
+admin.site.register(Question ,QuestionAdmin)
+
+class QuestionLinkInline(admin.TabularInline):
+    model = Question
+    fields = ('txt_question', 'question_grade')
+    # Django 1.8 introduced this, no need to make your own link
+    show_change_link = True
 
 class LessonAdmin(admin.ModelAdmin):
     list_display = ['title']
-
-
-class QuestionAdmin(admin.ModelAdmin):
-    inlines = [ChoiceInline]
-
-
-# <HINT> Register Question and Choice models here
+    inlines = [QuestionLinkInline]
 
 admin.site.register(Course, CourseAdmin)
 admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Instructor)
 admin.site.register(Learner)
-admin.site.register(Question, QuestionAdmin)
-admin.site.register(Choice)
